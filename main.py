@@ -1,62 +1,58 @@
 import os
 import requests
+import logging
 from datetime import datetime, timedelta
-import sys
 
-# Set Radarr URL and API Key from environment variables
-RADARR_URL = os.getenv("RADARR_URL")
-RADARR_API_KEY = os.getenv("RADARR_API_KEY")
-DAYS_BEFORE_DELETION = os.getenv("DAYS_BEFORE_DELETION", 60)  # Default to 60 days if not set
+# Set up logging to console only
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-# Check if the required environment variables are set
-if not RADARR_URL or not RADARR_API_KEY:
-    print("Error: RADARR_URL and RADARR_API_KEY must be set.")
-    sys.exit(1)
+# Create console handler
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
 
-# Convert the days to an integer
-try:
-    days_before_deletion = int(DAYS_BEFORE_DELETION)
-except ValueError:
-    print("Error: DAYS_BEFORE_DELETION must be an integer.")
-    sys.exit(1)
-
-def get_movies():
-    url = f"{RADARR_URL}/api/v3/movie"
-    headers = {
-        "X-Api-Key": RADARR_API_KEY
-    }
-    
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()
-    
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching movies: {e}")
-        return []
-
-def delete_movie(movie_id):
-    url = f"{RADARR_URL}/api/v3/movie/{movie_id}"
-    headers = {
-        "X-Api-Key": RADARR_API_KEY
-    }
-    
-    try:
-        response = requests.delete(url, headers=headers)
-        response.raise_for_status()
-        print(f"Deleted movie ID: {movie_id}")
-    
-    except requests.exceptions.RequestException as e:
-        print(f"Error deleting movie ID {movie_id}: {e}")
+# Add the console handler to the logger
+logger.addHandler(ch)
 
 def main():
-    movies = get_movies()
-    threshold_date = datetime.now() - timedelta(days=days_before_deletion)
-    
-    for movie in movies:
-        added_date = datetime.strptime(movie.get("added"), '%Y-%m-%dT%H:%M:%SZ')  # Adjusted format
-        if added_date < threshold_date:
-            delete_movie(movie.get("id"))
+    logger.info("Starting Radarr Clean Sweep script.")
+
+    # Retrieve environment variables
+    radarr_url = os.getenv("RADARR_URL")
+    radarr_api_key = os.getenv("RADARR_API_KEY")
+    days_threshold = int(os.getenv("DAYS", 60))
+
+    if not radarr_url or not radarr_api_key:
+        logger.error("RADARR_URL and RADARR_API_KEY must be set.")
+        return
+
+    # Make API call to Radarr
+    try:
+        response = requests.get(f"{radarr_url}/api/v3/movie", headers={"X-Api-Key": radarr_api_key})
+        response.raise_for_status()  # Raise an error for bad responses
+        movies = response.json()
+
+        # Current date for comparison
+        current_date = datetime.utcnow()
+        threshold_date = current_date - timedelta(days=days_threshold)
+
+        for movie in movies:
+            added_date = datetime.strptime(movie.get("added"), '%Y-%m-%dT%H:%M:%SZ')  # Correct date format
+            if added_date < threshold_date:
+                # Logic to delete the movie
+                movie_id = movie['id']
+                delete_response = requests.delete(f"{radarr_url}/api/v3/movie/{movie_id}", headers={"X-Api-Key": radarr_api_key})
+                if delete_response.status_code == 200:
+                    logger.info(f"Deleted movie: {movie['title']} (ID: {movie_id})")
+                else:
+                    logger.error(f"Failed to delete movie: {movie['title']} (ID: {movie_id}), Status Code: {delete_response.status_code}")
+
+        logger.info("Radarr Clean Sweep script completed.")
+
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
