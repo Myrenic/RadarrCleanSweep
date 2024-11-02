@@ -20,14 +20,16 @@ A lightweight Dockerized script that automatically deletes movies from your Rada
 
 ``` docker-compose
 version: '3.8'
+
 services:
-  radarr-clean-sweep:
-    image: radarr-clean-sweep
-    build:
-      context: .
-    environment:
-      RADARR_URL: ${RADARR_URL}
-      DAYS_BEFORE_DELETION=30
-      RADARR_API_KEY: ${RADARR_API_KEY}
+  radarrcleansweep:
+    image: ghcr.io/myrenic/radarrcleansweep:latest
     restart: unless-stopped
+    environment:
+      - RADARR_URL=http://radarr:7878/
+      - RADARR_API_KEY=UseYourApiKeyHere
+      - DAYS=60
+    volumes:
+      - ./data:/app/data  # Adjust volume mapping as needed
+
 ```
