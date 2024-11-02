@@ -23,13 +23,12 @@ version: '3.8'
 
 services:
   radarrcleansweep:
+    container_name: radarrcleansweep
     image: ghcr.io/myrenic/radarrcleansweep:latest
     restart: unless-stopped
     environment:
-      - RADARR_URL=http://radarr:7878/
-      - RADARR_API_KEY=UseYourApiKeyHere
-      - DAYS=60
-    volumes:
-      - ./data:/app/data  # Adjust volume mapping as needed
+      - RADARR_URL=http://radarr:7878
+      - RADARR_API_KEY=
+      - DAYS=30
 
 ```
