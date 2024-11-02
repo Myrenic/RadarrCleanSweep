@@ -6,6 +6,10 @@ on:
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
+    
+permissions:
+  contents: read
+  packages: write  # Required for pushing Docker images to ghcr.io
 
 env:
   REGISTRY: ghcr.io
