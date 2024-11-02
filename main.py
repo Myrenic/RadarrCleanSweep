@@ -6,10 +6,18 @@ import sys
 # Set Radarr URL and API Key from environment variables
 RADARR_URL = os.getenv("RADARR_URL")
 RADARR_API_KEY = os.getenv("RADARR_API_KEY")
+DAYS_BEFORE_DELETION = os.getenv("DAYS_BEFORE_DELETION", 60)  # Default to 60 days if not set
 
 # Check if the required environment variables are set
 if not RADARR_URL or not RADARR_API_KEY:
     print("Error: RADARR_URL and RADARR_API_KEY must be set.")
+    sys.exit(1)
+
+# Convert the days to an integer
+try:
+    days_before_deletion = int(DAYS_BEFORE_DELETION)
+except ValueError:
+    print("Error: DAYS_BEFORE_DELETION must be an integer.")
     sys.exit(1)
 
 def get_movies():
@@ -43,11 +51,11 @@ def delete_movie(movie_id):
 
 def main():
     movies = get_movies()
-    two_months_ago = datetime.now() - timedelta(days=60)
+    threshold_date = datetime.now() - timedelta(days=days_before_deletion)
     
     for movie in movies:
         added_date = datetime.strptime(movie.get("added"), '%Y-%m-%dT%H:%M:%SZ')  # Adjusted format
-        if added_date < two_months_ago:
+        if added_date < threshold_date:
             delete_movie(movie.get("id"))
 
 if __name__ == "__main__":

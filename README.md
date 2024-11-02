@@ -27,6 +27,7 @@ services:
       context: .
     environment:
       RADARR_URL: ${RADARR_URL}
+      DAYS_BEFORE_DELETION=30
       RADARR_API_KEY: ${RADARR_API_KEY}
     restart: unless-stopped
 ```
