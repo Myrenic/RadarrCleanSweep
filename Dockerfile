@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY main.py ./
 COPY run_script.sh ./
+COPY requirements.txt .
+
+# install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Ensure the script is executable
 RUN chmod +x run_script.sh
@@ -17,3 +21,12 @@ RUN apt-get update && apt-get install -y cron \
 
 # Run cron in the foreground
 CMD ["cron", "-f"]
+
+
+
+
+# Copy the main script into the container
+COPY main.py .
+
+# Command to run the script
+CMD ["python", "main.py"]
