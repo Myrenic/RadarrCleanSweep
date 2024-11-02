@@ -20,7 +20,7 @@ def delete_old_movies(radarr_url, radarr_api_key, days_threshold):
     for movie in response.json():
         added_date = datetime.strptime(movie.get("added"), '%Y-%m-%dT%H:%M:%SZ')
         if added_date < threshold_date:
-            delete_response = requests.delete(f"{radarr_url}/api/v3/movie/{movie['id']}", headers={"X-Api-Key": radarr_api_key})
+            delete_response = requests.delete(f"{radarr_url}/api/v3/movie/{movie['id']}?deleteFiles=true", headers={"X-Api-Key": radarr_api_key})
             if delete_response.status_code == 200:
                 logger.info(f"Deleted movie: {movie['title']} (ID: {movie['id']})")
             else:
