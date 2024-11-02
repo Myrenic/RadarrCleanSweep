@@ -30,5 +30,6 @@ services:
       - RADARR_URL=http://radarr:7878
       - RADARR_API_KEY=
       - DAYS=30
-
+    depends_on:
+      - radarr
 ```
