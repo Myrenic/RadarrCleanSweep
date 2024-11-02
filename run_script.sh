@@ -1,13 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
-# Log the script start time to console
-echo "$(date) - Running Radarr Clean Sweep script."
+# Log starting time
+echo "$(date) - Starting Radarr Clean Sweep script." >> /app/logs/radarr_clean_sweep.log
 
-# Navigate to the app directory if necessary
-cd /app
+# Execute the main script
+python3 /app/main.py  # Adjust the path if necessary
 
-# Run the Python script
-python3 main.py
-
-# Log the completion time to console
-echo "$(date) - Finished running Radarr Clean Sweep script."
+# Log completion time
+echo "$(date) - Radarr Clean Sweep script completed." >> /app/logs/radarr_clean_sweep.log

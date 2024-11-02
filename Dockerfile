@@ -1,15 +1,21 @@
-# Use the official Python image as a base
+# Use an appropriate base image
 FROM python:3.8-slim
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the requirements file and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy your script files
+COPY main.py ./
+COPY run_script.sh ./
 
-# Copy the main script into the container
-COPY main.py .
+# Install necessary dependencies (if any)
+# RUN pip install requests  # Example, adjust as needed
 
-# Command to run the script
-CMD ["python", "main.py"]
+# Make the script executable
+RUN chmod +x run_script.sh
+
+# Setup cron job to run every hour
+RUN echo "0 * * * * /app/run_script.sh" | crontab -
+
+# Run cron in the foreground
+CMD ["cron", "-f"]
